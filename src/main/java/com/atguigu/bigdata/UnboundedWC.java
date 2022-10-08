@@ -17,7 +17,7 @@ public class UnboundedWC {
         env.setParallelism(1);
         
         env
-            .socketTextStream("hadoop162", 9999)
+            .socketTextStream("10.10.101.62", 9999)
             .flatMap(new FlatMapFunction<String, String>() {
                 @Override
                 public void flatMap(String line,
