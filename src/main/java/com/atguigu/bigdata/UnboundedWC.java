@@ -1,11 +1,15 @@
 package com.atguigu.bigdata;
 
+
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.functions.source.SocketTextStreamFunction;
+import org.apache.flink.streaming.api.scala.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
+import scala.Char;
 
 /**
  * @Author lzc
@@ -16,8 +20,19 @@ public class UnboundedWC {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
-        env
-                .socketTextStream("10.10.101.62", 9999)
+        DataStreamSource<String> streamSource = env.socketTextStream("10.10.101.62", 9999);
+
+
+        SingleOutputStreamOperator<String> stringSingleOutputStreamOperator = streamSource.flatMap(new FlatMapFunction<String, String>() {
+            public void flatMap(String value, Collector<String> out) throws Exception {
+                String[] strs = value.split(" ");
+                for (String str : strs) {
+                    out.collect(str);
+                }
+            }
+        });
+        stringSingleOutputStreamOperator.print();
+
 //                .flatMap(new FlatMapFunction<String, String>() {
 //                    @Override
 //                    public void flatMap(String line,
@@ -40,7 +55,7 @@ public class UnboundedWC {
 //                    }
 //                })
 //                .sum(1)
-                .print();
+
 
         env.execute();
 
